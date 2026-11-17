@@ -1,0 +1,16 @@
+{
+  "name": "prd-generator-2",
+  "owner": {
+    "name": "luciddreamcenter1-design"
+  },
+  "metadata": {
+    "description": "PRD Generator 2.0: interview-driven PRDs, live tracker, Ralph build loop."
+  },
+  "plugins": [
+    {
+      "name": "prd-generator",
+      "source": "./",
+      "description": "Interview-driven, build-ready PRDs with a live self-ticking tracker and a Ralph build loop."
+    }
+  ]
+}
