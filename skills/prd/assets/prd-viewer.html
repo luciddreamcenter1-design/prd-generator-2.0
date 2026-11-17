@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{PRD_TITLE}}</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --panel: #fff; --text: #1f2328; --muted: #656d76; --line: #e5e7eb;
+    --accent: #4f46e5; --accent-soft: #eef2ff; --done: #16a34a; --tbd: #fef3c7; --tbd-text: #92400e;
+    --assume: #e0f2fe; --assume-text: #075985; --code: #f6f8fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --panel: #161b22; --text: #e6edf3; --muted: #8b949e; --line: #30363d;
+      --accent: #818cf8; --accent-soft: #1e1b4b; --done: #4ade80; --tbd: #422006; --tbd-text: #fcd34d;
+      --assume: #082f49; --assume-text: #7dd3fc; --code: #1f2630;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; background: var(--bg); color: var(--text); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0; flex: 1 1 240px; }
+  .meter { flex: 0 1 220px; font-size: 12px; color: var(--muted); }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 3px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .bar.done > i { background: var(--done); }
+  .actions { display: flex; gap: 6px; }
+  button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 270px minmax(0, 1fr) 280px; gap: 24px; max-width: 1500px; margin: 0 auto; padding: 20px; }
+  nav, aside { position: sticky; top: 70px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
+  nav a { display: flex; justify-content: space-between; gap: 8px; color: var(--text); text-decoration: none; padding: 3px 6px; border-radius: 4px; }
+  nav a:hover, nav a.active { background: var(--accent-soft); }
+  nav a.h3 { padding-left: 20px; color: var(--muted); }
+  nav .count { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  nav .count.full { color: var(--done); font-weight: 600; }
+  main { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 40px 40px; min-width: 0; }
+  main h1 { font-size: 28px; } main h2 { margin-top: 2.2em; padding-bottom: 6px; border-bottom: 1px solid var(--line); } main h3 { margin-top: 1.6em; }
+  main table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; display: block; overflow-x: auto; }
+  main th, main td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+  main th { background: var(--code); }
+  main pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.4; }
+  main code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  main :not(pre) > code { background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  main blockquote { margin: 12px 0; padding: 4px 16px; border-left: 4px solid var(--accent); color: var(--muted); }
+  main li.task { list-style: none; margin-left: -22px; }
+  main li.task input { width: 16px; height: 16px; margin-right: 8px; vertical-align: -2px; cursor: pointer; accent-color: var(--done); }
+  main li.task.checked > label, main li.task.checked > p { color: var(--muted); text-decoration: line-through; }
+  body.hide-done main li.task.checked { display: none; }
+  .mermaid { background: #fff; border-radius: 8px; padding: 12px; margin: 12px 0; text-align: center; overflow-x: auto; }
+  mark.tbd { background: var(--tbd); color: var(--tbd-text); padding: 0 4px; border-radius: 4px; font-weight: 600; }
+  mark.assume { background: var(--assume); color: var(--assume-text); padding: 0 4px; border-radius: 4px; font-weight: 600; }
+  aside h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+  aside .item { display: block; padding: 6px 8px; margin-bottom: 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); text-decoration: none; background: var(--panel); }
+  aside .item:hover { border-color: var(--accent); }
+  aside .item small { display: block; color: var(--muted); }
+  aside .empty { color: var(--muted); }
+  .live { font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .live.on { color: var(--done); border-color: var(--done); }
+  .live.on::before { content: "● "; }
+  .live.error { color: #b91c1c; border-color: #b91c1c; }
+  .flash { animation: flash 1.2s; } @keyframes flash { from { background: var(--tbd); } }
+  .error { padding: 20px; color: #b91c1c; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 220px minmax(0, 1fr); } aside { display: none; } }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; padding: 10px; } nav { display: none; } main { padding: 4px 18px 24px; } }
+  @media print { header .actions, nav, aside { display: none; } .layout { display: block; } main { border: 0; } header { position: static; } }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="doc-title">{{PRD_TITLE}}</h1>
+  <div class="meter" title="Tasks in the Implementation Plan section">Build progress <span id="build-label">0/0</span><div class="bar" id="build-bar"><i></i></div></div>
+  <div class="meter" title="All other checkboxes (scope, acceptance criteria)">Acceptance <span id="acc-label">0/0</span><div class="bar" id="acc-bar"><i></i></div></div>
+  <span id="live" class="live off"></span>
+  <div class="actions">
+    <button id="hide-done" aria-pressed="false">Hide done</button>
+    <button id="export">Export .md</button>
+    <button id="reset" title="Clear checkbox changes saved in this browser">Reset</button>
+  </div>
+</header>
+<div class="layout">
+  <nav id="toc" aria-label="Contents"></nav>
+  <main id="doc"><p>Loading…</p></main>
+  <aside><h2>Open items</h2><div id="open-items"></div></aside>
+</div>
+
+<script type="text/markdown" id="prd-src">{{PRD_MARKDOWN}}</script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+(() => {
+  const TASK_RE = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s*)(.*)$/;
+  const doc = document.getElementById('doc');
+  const status = document.getElementById('live');
+  const storeKey = 'prd-tracker:' + document.title;
+  const load = () => { try { return JSON.parse(localStorage.getItem(storeKey)) || {}; } catch { return {}; } };
+  const save = s => { try { localStorage.setItem(storeKey, JSON.stringify(s)); } catch {} };
+  let src = document.getElementById('prd-src').textContent.replace(/^\n/, '').replace(/<\\\/(script)/gi, '</$1');
+  let live = false;       // served by serve_tracker.py: PRD.md on disk is the source of truth
+  let version = null;
+  let state = load();     // static mode only: checkbox overrides saved in this browser
+  let lines = [], taskLines = [], boxes = [], heads = [], tocLinks = new Map(), io;
+
+  const parseTasks = () => {
+    lines = src.split('\n'); taskLines = [];
+    let fence = null; const seen = {};
+    lines.forEach((line, i) => {
+      const f = line.match(/^\s*(`{3,}|~{3,})/);
+      if (f) { if (!fence) fence = f[1][0]; else if (f[1][0] === fence) fence = null; return; }
+      if (fence) return;
+      const m = line.match(TASK_RE); if (!m) return;
+      const text = m[4].trim(); seen[text] = (seen[text] || 0) + 1;
+      taskLines.push({ i, checked: m[2] !== ' ', text, key: text + '#' + seen[text] });
+    });
+  };
+
+  const slug = s => s.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') || 'section';
+  const ownerOf = el => { let h2 = null, h3 = null; for (const h of heads) { if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) { if (h.tagName === 'H2') { h2 = h; h3 = null; } else h3 = h; } else break; } return { h2, h3 }; };
+  const isBuild = h2 => h2 && /implementation|roadmap|phases|milestones|work units|plan/i.test(h2.textContent);
+
+  function render() {
+    const scroll = window.scrollY;
+    parseTasks();
+    if (!window.marked) {
+      doc.innerHTML = '<p class="error">Could not load the Markdown renderer (offline?). Showing raw PRD.</p>';
+      const pre = document.createElement('pre'); pre.textContent = src; doc.appendChild(pre); return;
+    }
+    doc.innerHTML = marked.parse(src, { gfm: true });
+
+    const used = {};
+    heads = [...doc.querySelectorAll('h2, h3')];
+    heads.forEach(h => { let id = slug(h.textContent); used[id] = (used[id] || 0) + 1; if (used[id] > 1) id += '-' + used[id]; h.id = id; });
+    const title = doc.querySelector('h1'); if (title) document.getElementById('doc-title').textContent = title.textContent;
+
+    boxes = [...doc.querySelectorAll('li > input[type=checkbox], li > p > input[type=checkbox]')];
+    boxes.forEach((box, n) => {
+      const t = taskLines[n]; if (!t) return;
+      const li = box.closest('li'); li.classList.add('task');
+      box.disabled = false;
+      box.checked = !live && t.key in state ? state[t.key] : t.checked;
+      li.classList.toggle('checked', box.checked);
+      box.addEventListener('change', () => toggle(n, box, li));
+    });
+    const owners = boxes.map(ownerOf);
+
+    const toc = document.getElementById('toc'); toc.innerHTML = ''; tocLinks = new Map();
+    heads.forEach(h => {
+      const a = document.createElement('a'); a.href = '#' + h.id; a.className = h.tagName.toLowerCase();
+      a.innerHTML = '<span></span><span class="count"></span>'; a.firstChild.textContent = h.textContent;
+      toc.appendChild(a); tocLinks.set(h, a);
+    });
+    refresh = () => {
+      const counts = new Map(heads.map(h => [h, [0, 0]]));
+      const b = [0, 0], a = [0, 0];
+      boxes.forEach((box, n) => {
+        const { h2, h3 } = owners[n]; const c = box.checked ? 1 : 0;
+        [h2, h3].forEach(h => { if (h) { counts.get(h)[0] += c; counts.get(h)[1]++; } });
+        const bucket = isBuild(h2) ? b : a; bucket[0] += c; bucket[1]++;
+      });
+      heads.forEach(h => {
+        const [d, t] = counts.get(h); const el = tocLinks.get(h).lastChild;
+        el.textContent = t ? `${d}/${t}` : ''; el.classList.toggle('full', t > 0 && d === t);
+      });
+      setBar('build', ...b); setBar('acc', ...a);
+    };
+    refresh();
+    markOpenItems();
+
+    io?.disconnect();
+    io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { tocLinks.forEach(a => a.classList.remove('active')); tocLinks.get(e.target)?.classList.add('active'); } }), { rootMargin: '-80px 0px -70% 0px' });
+    heads.forEach(h => io.observe(h));
+
+    const blocks = [...doc.querySelectorAll('pre > code.language-mermaid')];
+    if (blocks.length && window.mermaid) {
+      blocks.forEach(code => { const div = document.createElement('div'); div.className = 'mermaid'; div.textContent = code.textContent; code.parentElement.replaceWith(div); });
+      mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'strict' });
+      mermaid.run({ querySelector: '.mermaid' }).catch(() => {});
+    }
+    window.scrollTo(0, scroll);
+  }
+  let refresh = () => {};
+
+  function setBar(id, done, total) {
+    document.getElementById(id + '-label').textContent = `${done}/${total}`;
+    const bar = document.getElementById(id + '-bar');
+    bar.firstElementChild.style.width = total ? (100 * done / total) + '%' : '0';
+    bar.classList.toggle('done', total > 0 && done === total);
+  }
+
+  async function toggle(n, box, li) {
+    const t = taskLines[n];
+    li.classList.toggle('checked', box.checked); refresh();
+    if (!live) { state[t.key] = box.checked; save(state); return; }
+    try {
+      const r = await fetch('api/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ line: t.i, text: t.text, checked: box.checked, version }) });
+      if (!r.ok) throw new Error(await r.text());
+      await pull(true);
+    } catch (e) { setStatus('error', 'Save failed: ' + e.message); await pull(true); }
+  }
+
+  function markOpenItems() {
+    const walker = document.createTreeWalker(doc, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('pre, code, .mermaid') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    const nodes = []; while (walker.nextNode()) if (/\[(TBD|ASSUMPTION)\]/.test(walker.currentNode.nodeValue)) nodes.push(walker.currentNode);
+    const items = [];
+    nodes.forEach(node => {
+      const frag = document.createDocumentFragment();
+      node.nodeValue.split(/(\[TBD\]|\[ASSUMPTION\])/).forEach(part => {
+        if (part === '[TBD]' || part === '[ASSUMPTION]') {
+          const m = document.createElement('mark'); m.className = part === '[TBD]' ? 'tbd' : 'assume';
+          m.textContent = part.slice(1, -1); m.id = 'mark-' + items.length; frag.appendChild(m); items.push(m);
+        } else if (part) frag.appendChild(document.createTextNode(part));
+      });
+      node.replaceWith(frag);
+    });
+    const list = document.getElementById('open-items'); list.innerHTML = '';
+    if (!items.length) list.innerHTML = '<p class="empty">No [TBD] or [ASSUMPTION] markers.</p>';
+    items.forEach(m => {
+      const block = m.closest('li, p, td, th') || m.parentElement; const { h2 } = ownerOf(m);
+      const a = document.createElement('a'); a.className = 'item'; a.href = '#' + m.id;
+      a.innerHTML = '<span></span><small></small>';
+      a.firstChild.textContent = (m.className === 'tbd' ? 'TBD: ' : 'Assumption: ') + block.textContent.replace(/^(TBD|ASSUMPTION)\s*/, '').slice(0, 110);
+      a.lastChild.textContent = h2 ? h2.textContent : '';
+      a.addEventListener('click', () => { block.classList.remove('flash'); void block.offsetWidth; block.classList.add('flash'); });
+      list.appendChild(a);
+    });
+  }
+
+  function setStatus(kind, text) { status.className = 'live ' + kind; status.textContent = text; }
+
+  // Live mode: poll PRD.md through serve_tracker.py so ticks made by the build agent show up on their own.
+  async function pull(force) {
+    try {
+      const r = await fetch('api/prd', { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      const v = r.headers.get('X-PRD-Version');
+      if (!live) { live = true; document.getElementById('reset').hidden = true; }
+      setStatus('on', 'Live · synced ' + new Date().toLocaleTimeString());
+      if (force || v !== version) { version = v; src = await r.text(); render(); }
+    } catch {
+      if (live) setStatus('error', 'Live · server unreachable, retrying');
+    }
+  }
+
+  // Controls.
+  const hide = document.getElementById('hide-done');
+  hide.addEventListener('click', () => { const on = document.body.classList.toggle('hide-done'); hide.setAttribute('aria-pressed', on); });
+  document.getElementById('reset').addEventListener('click', () => {
+    if (!confirm('Clear checkbox changes saved in this browser and return to the state in the PRD file?')) return;
+    localStorage.removeItem(storeKey); state = {}; render();
+  });
+  document.getElementById('export').addEventListener('click', () => {
+    const out = lines.slice();
+    boxes.forEach((box, n) => { const t = taskLines[n]; if (t) out[t.i] = out[t.i].replace(TASK_RE, (_, a, __, c, d) => a + (box.checked ? 'x' : ' ') + c + d); });
+    const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([out.join('\n')], { type: 'text/markdown' })), download: 'PRD.md' });
+    link.click(); URL.revokeObjectURL(link.href);
+  });
+
+  render();
+  if (location.protocol.startsWith('http')) { pull(); setInterval(pull, 2000); }
+  else setStatus('off', 'Static · run serve_tracker.py for live updates');
+})();
+</script>
+</body>
+</html>

@@ -1,17 +1,19 @@
 {
   "name": "prd-generator",
-  "version": "1.0.0",
-  "description": "Generate comprehensive Product Requirements Documents (PRDs) from conversation context. Use when planning new features, products, or projects.",
+  "version": "2.0.0",
+  "description": "Interview-driven, build-ready PRDs with a live self-ticking tracker and a Ralph build loop over ralphinho-style work units.",
   "author": {
-    "name": "Denis Redozubov",
-    "github": "dredozubov"
+    "name": "luciddreamcenter1-design",
+    "github": "luciddreamcenter1-design"
   },
-  "repository": "https://github.com/dredozubov/prd-generator",
+  "repository": "https://github.com/luciddreamcenter1-design/prd-generator-2.0",
+  "license": "MIT",
   "keywords": [
     "prd",
     "product-requirements",
-    "documentation",
     "planning",
-    "project-management"
+    "ralph-loop",
+    "tracker",
+    "claude-code"
   ]
 }
