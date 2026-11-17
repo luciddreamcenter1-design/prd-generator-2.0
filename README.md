@@ -31,25 +31,31 @@ serve_tracker.py     live tracker: boxes tick as PRD.md changes
 ## Install
 
 ```bash
-git clone https://github.com/luciddreamcenter1-design/prd-generator-2.0 ~/.claude/plugins/prd-generator
+claude plugin marketplace add luciddreamcenter1-design/prd-generator-2.0
 ```
 
-Enable it in Claude Code. For the loop, also install the official Ralph loop plugin:
+```bash
+claude plugin install prd-generator@prd-generator-2
+```
+
+For the build loop, also install the official Ralph loop plugin:
 
 ```bash
 claude plugin install ralph-loop@claude-plugins-official
 ```
 
+Restart Claude Code after installing. The tracker scripts live in the installed plugin folder; inside Claude Code the skill calls them through `${CLAUDE_PLUGIN_ROOT}`. From a terminal, run them from your clone of this repo.
+
 ## Run the tracker
 
 ```bash
-python3 ~/.claude/plugins/prd-generator/skills/prd/scripts/serve_tracker.py PRD.md --open
+python3 skills/prd/scripts/serve_tracker.py PRD.md --open
 ```
 
 Python 3 stdlib only. It binds to `127.0.0.1:4747` (`--port` to change) and only accepts writes from its own page. For a static, shareable copy (no live updates):
 
 ```bash
-python3 ~/.claude/plugins/prd-generator/skills/prd/scripts/build_viewer.py PRD.md PRD.html
+python3 skills/prd/scripts/build_viewer.py PRD.md PRD.html
 ```
 
 ## Layout
